@@ -9,22 +9,13 @@
 #define ocl_h
 
 
-#define ROOT_PRG    "/Users/toby/Documents/USI/postdoc/cardio/xcode/elec1/elec1"
+#define ROOT_PRG    "/Users/toby/Documents/USI/postdoc/cardiac/xcode/elec1/elec1"
 
-
-struct buf_int
-{
-    int*            hst;
-    cl_mem          dev;
-};
-
-
-struct buf_float
-{
-    float*          hst;
-    cl_mem          dev;
-};
-
+/*
+ ===================================
+ struct
+ ===================================
+ */
 
 struct buf_float4
 {
@@ -33,11 +24,38 @@ struct buf_float4
 };
 
 
-struct buf_coo
+
+struct state
 {
-    struct buf_int   ii;
-    struct buf_int   jj;
-    struct buf_float vv;
+    float Vm;       // (volt)          (in Membrane)
+    float Ca_SR;    // (millimolar)    (in calcium_dynamics)
+    float Cai;      // (millimolar)    (in calcium_dynamics)
+    float g;        // NOT USED
+    float d;        // (dimensionless) (in i_CaL_d_gate)
+    float f1;       // (dimensionless) (in i_CaL_f1_gate)
+    float f2;       // (dimensionless) (in i_CaL_f2_gate)
+    float fCa;      // (dimensionless) (in i_CaL_fCa_gate)
+    float Xr1;      // (dimensionless) (in i_Kr_Xr1_gate)
+    float Xr2;      // (dimensionless) (in i_Kr_Xr2_gate)
+    float Xs;       // (dimensionless) (in i_Ks_Xs_gate)
+    float h;        // (dimensionless) (in i_Na_h_gate)
+    float j;        // (dimensionless) (in i_Na_j_gate)
+    float m;        // (dimensionless) (in i_Na_m_gate)
+    float Xf;       // (dimensionless) (in i_f_Xf_gate)
+    float q;        // (dimensionless) (in i_to_q_gate)
+    float r;        // (dimensionless) (in i_to_r_gate)
+    float Nai;      // (millimolar)    (in sodium_dynamics)
+    float m_L;      // (dimensionless) (in i_NaL_m_gate)
+    float h_L;      // (dimensionless) (in i_NaL_h_gate)
+    float RyRa;     // (dimensionless) (in calcium_dynamics)
+    float RyRo;     // (dimensionless) (in calcium_dynamics)
+    float RyRc;     // (dimensionless) (in calcium_dynamics)
+};
+
+struct buf_state
+{
+    struct state*   hst;
+    cl_mem          dev;
 };
 
 
@@ -59,12 +77,19 @@ struct ocl_obj
     //memory
     struct buf_float4 vtx_xx;
     struct buf_float4 vtx_uu;
+    struct buf_state  vtx_yy;
 
     //kernels
     cl_kernel vtx_init;
-    cl_kernel vtx_calc;
+    cl_kernel vtx_memb;
 };
 
+
+/*
+ ===================================
+ init
+ ===================================
+ */
 
 //init
 void ocl_init(struct prm_obj *prm, struct ocl_obj *ocl)
@@ -164,7 +189,7 @@ void ocl_init(struct prm_obj *prm, struct ocl_obj *ocl)
      */
 
     ocl->vtx_init = clCreateKernel(ocl->program, "vtx_init", &ocl->err);
-    ocl->vtx_calc = clCreateKernel(ocl->program, "vtx_calc", &ocl->err);
+    ocl->vtx_memb = clCreateKernel(ocl->program, "vtx_memb", &ocl->err);
 
     /*
      =============================
@@ -177,10 +202,12 @@ void ocl_init(struct prm_obj *prm, struct ocl_obj *ocl)
     //host
     ocl->vtx_xx.hst = malloc(prm->nv_tot*sizeof(cl_float4));
     ocl->vtx_uu.hst = malloc(prm->nv_tot*sizeof(cl_float4));
+    ocl->vtx_yy.hst = malloc(prm->nv_tot*sizeof(struct state));
     
     //device
     ocl->vtx_xx.dev = clCreateBuffer(ocl->context, CL_MEM_HOST_READ_ONLY, prm->nv_tot*sizeof(cl_float4), NULL, &ocl->err);
     ocl->vtx_uu.dev = clCreateBuffer(ocl->context, CL_MEM_HOST_READ_ONLY, prm->nv_tot*sizeof(cl_float4), NULL, &ocl->err);
+    ocl->vtx_yy.dev = clCreateBuffer(ocl->context, CL_MEM_HOST_READ_ONLY, prm->nv_tot*sizeof(struct state), NULL, &ocl->err);
     
     /*
      =============================
@@ -188,14 +215,16 @@ void ocl_init(struct prm_obj *prm, struct ocl_obj *ocl)
      =============================
      */
 
-    ocl->err = clSetKernelArg(ocl->vtx_init,  0, sizeof(cl_float4), (void*)&prm->dx);
-    ocl->err = clSetKernelArg(ocl->vtx_init,  1, sizeof(cl_mem),    (void*)&ocl->vtx_xx.dev);
-    ocl->err = clSetKernelArg(ocl->vtx_init,  2, sizeof(cl_mem),    (void*)&ocl->vtx_uu.dev);
+    ocl->err = clSetKernelArg(ocl->vtx_init,  0, sizeof(cl_float4), (void*)&prm->x0);
+    ocl->err = clSetKernelArg(ocl->vtx_init,  1, sizeof(cl_float4), (void*)&prm->dx);
+    ocl->err = clSetKernelArg(ocl->vtx_init,  2, sizeof(cl_mem),    (void*)&ocl->vtx_xx.dev);
+    ocl->err = clSetKernelArg(ocl->vtx_init,  3, sizeof(cl_mem),    (void*)&ocl->vtx_uu.dev);
+    ocl->err = clSetKernelArg(ocl->vtx_init,  4, sizeof(cl_mem),    (void*)&ocl->vtx_yy.dev);
 
-    ocl->err = clSetKernelArg(ocl->vtx_calc,  0, sizeof(cl_float3), (void*)&prm->dx);
-    ocl->err = clSetKernelArg(ocl->vtx_calc,  1, sizeof(cl_mem),    (void*)&ocl->vtx_xx.dev);
-    ocl->err = clSetKernelArg(ocl->vtx_calc,  2, sizeof(cl_mem),    (void*)&ocl->vtx_uu.dev);
-
+    ocl->err = clSetKernelArg(ocl->vtx_memb,  0, sizeof(cl_float4), (void*)&prm->dx);
+    ocl->err = clSetKernelArg(ocl->vtx_memb,  1, sizeof(cl_mem),    (void*)&ocl->vtx_xx.dev);
+    ocl->err = clSetKernelArg(ocl->vtx_memb,  2, sizeof(cl_mem),    (void*)&ocl->vtx_uu.dev);
+    ocl->err = clSetKernelArg(ocl->vtx_memb,  3, sizeof(cl_mem),    (void*)&ocl->vtx_yy.dev);
 }
 
 
@@ -207,18 +236,21 @@ void ocl_final(struct prm_obj *msh, struct ocl_obj *ocl)
     
     //kernels
     ocl->err = clReleaseKernel(ocl->vtx_init);
-    ocl->err = clReleaseKernel(ocl->vtx_calc);
+    ocl->err = clReleaseKernel(ocl->vtx_memb);
     
     //memory
     ocl->err = clReleaseMemObject(ocl->vtx_xx.dev);
     ocl->err = clReleaseMemObject(ocl->vtx_uu.dev);
-
-    ocl->err = clReleaseProgram(ocl->program);
-    ocl->err = clReleaseCommandQueue(ocl->command_queue);
-    ocl->err = clReleaseContext(ocl->context);
+    ocl->err = clReleaseMemObject(ocl->vtx_yy.dev);
     
     free(ocl->vtx_xx.hst);
     free(ocl->vtx_uu.hst);
+    free(ocl->vtx_yy.hst);
+    
+    //context
+    ocl->err = clReleaseProgram(ocl->program);
+    ocl->err = clReleaseCommandQueue(ocl->command_queue);
+    ocl->err = clReleaseContext(ocl->context);
     
     return;
 }
