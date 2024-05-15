@@ -28,7 +28,7 @@ struct prm_obj
 void prm_init(struct prm_obj *prm)
 {
     //dim
-    prm->ele_dim.x = 100;
+    prm->ele_dim.x = 10;
     prm->ele_dim.y = prm->ele_dim.x;
     prm->ele_dim.z = prm->ele_dim.x;
     

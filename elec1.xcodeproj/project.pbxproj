@@ -30,6 +30,7 @@
 		DA5337362B74EB8000AF8B2A /* prg.cl */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.opencl; path = prg.cl; sourceTree = "<group>"; };
 		DA604C4E2B7130D300D6CE88 /* elec1 */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = elec1; sourceTree = BUILT_PRODUCTS_DIR; };
 		DA604C512B7130D300D6CE88 /* main.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = main.c; sourceTree = "<group>"; };
+		DABEE07E2BF49900005D1C4D /* elec1 */ = {isa = PBXFileReference; lastKnownFileType = folder; name = elec1; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -67,6 +68,7 @@
 				DA5337332B74EB4E00AF8B2A /* io.h */,
 				DA604C512B7130D300D6CE88 /* main.c */,
 				DA5337362B74EB8000AF8B2A /* prg.cl */,
+				DABEE07E2BF49900005D1C4D /* elec1 */,
 			);
 			path = elec1;
 			sourceTree = "<group>";
