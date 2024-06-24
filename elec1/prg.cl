@@ -149,7 +149,7 @@ kernel void vtx_init(const  float4          x0,
     
     float4 x = x0 + dx*convert_float4((int4){vtx1_pos1,0});
 
-    //init
+    //resting
     struct state y;
     y.Vm    = -0.0749228904740065f;
     y.Ca_SR = +0.0936532528714175f;
@@ -175,16 +175,18 @@ kernel void vtx_init(const  float4          x0,
     y.RyRo  = +0.0260449185736275f;
     y.RyRc  = +0.0785849084330126f;
     
+
+
     //write
     vtx_xx[vtx1_idx1] = x;
     vtx_uu[vtx1_idx1] = 0e0f;
     vtx_yy[vtx1_idx1] = y;
     
     
-    if(all(vtx1_pos1.xyz<(int3){5,5,5}))
-    {
-        vtx_uu[vtx1_idx1].x = 0.03f;
-    }
+//    if(all(vtx1_pos1.xyz<(int3){5,5,5}))
+//    {
+//       vtx_yy[vtx1_idx1] = y1;
+//    }
     
     return;
 }
@@ -209,7 +211,7 @@ kernel void vtx_memb(const  float4          dx,
     struct state dy;
     
     //read
-    y.Vm = vtx_uu[vtx1_idx1].x;
+//    y.Vm = vtx_uu[vtx1_idx1].x;
     
 
     
@@ -509,7 +511,7 @@ kernel void vtx_memb(const  float4          dx,
     
     //write
     vtx_yy[vtx1_idx1] = y;
-    vtx_uu[vtx1_idx1].x = y.Vm;
+//    vtx_uu[vtx1_idx1].x = y.Vm;
 
     return;
 }
@@ -544,7 +546,7 @@ kernel void vtx_diff(const  float4          dx,
     float dt = dx.w;
 
 
-    vtx_uu[vtx_idx].x += 100.0f*dt*Au;   //monodomain update
+    vtx_uu[vtx_idx].x += dt*Au;   //monodomain update
 
 
     return;
