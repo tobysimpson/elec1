@@ -57,11 +57,11 @@ int main(int argc, const char * argv[])
         for(int k=0; k<5000; k++)
         {
             //calc
-//            ocl.err = clEnqueueNDRangeKernel(ocl.command_queue, ocl.vtx_memb, 3, NULL, nv, NULL, 0, NULL, NULL);
-        ocl.err = clEnqueueNDRangeKernel(ocl.command_queue, ocl.vtx_diff, 3, NULL, iv, NULL, 0, NULL, NULL);
-
-        }
+//            ocl.err = clEnqueueNDRangeKernel(ocl.command_queue, ocl.vtx_diff, 3, NULL, iv, NULL, 0, NULL, NULL);
+            ocl.err = clEnqueueNDRangeKernel(ocl.command_queue, ocl.vtx_memb, 3, NULL, nv, NULL, 0, NULL, NULL);
         
+        }
+        ocl.err = clEnqueueNDRangeKernel(ocl.command_queue, ocl.vtx_diff, 3, NULL, iv, NULL, 0, NULL, NULL);
         
     }
     

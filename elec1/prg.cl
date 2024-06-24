@@ -143,8 +143,8 @@ kernel void vtx_init(const  float4          x0,
                      global float4          *vtx_uu,
                      global struct state    *vtx_yy)
 {
-    int3 vtx_dim = {get_global_size(0), get_global_size(1), get_global_size(2)};
-    int3 vtx1_pos1 = {get_global_id(0)  , get_global_id(1),   get_global_id(2)};
+    int3 vtx_dim = (int3){get_global_size(0), get_global_size(1), get_global_size(2)};
+    int3 vtx1_pos1 = (int3){get_global_id(0)  , get_global_id(1),   get_global_id(2)};
     int  vtx1_idx1 = fn_idx1(vtx1_pos1, vtx_dim);
     
     float4 x = x0 + dx*convert_float4((int4){vtx1_pos1,0});
@@ -181,9 +181,9 @@ kernel void vtx_init(const  float4          x0,
     vtx_yy[vtx1_idx1] = y;
     
     
-    if(vtx1_pos1.x==0)
+    if(all(vtx1_pos1.xyz<(int3){5,5,5}))
     {
-        vtx_uu[vtx1_idx1] = 1e0f;
+        vtx_uu[vtx1_idx1].x = 0.03f;
     }
     
     return;
@@ -202,11 +202,16 @@ kernel void vtx_memb(const  float4          dx,
     
     //vec
 //    vtx_uu[vtx1_idx1].x += 1e0f;
-    vtx_uu[vtx1_idx1].y += dx.w;
+//    vtx_uu[vtx1_idx1].y += dx.w;
     
     //vars
     struct state y = vtx_yy[vtx1_idx1];
     struct state dy;
+    
+    //read
+    y.Vm = vtx_uu[vtx1_idx1].x;
+    
+
     
     //from matlab
     const float VmaxUp      = 0.5113f;       // millimolar_per_second (in calcium_dynamics)
@@ -504,6 +509,7 @@ kernel void vtx_memb(const  float4          dx,
     
     //write
     vtx_yy[vtx1_idx1] = y;
+    vtx_uu[vtx1_idx1].x = y.Vm;
 
     return;
 }
@@ -538,7 +544,7 @@ kernel void vtx_diff(const  float4          dx,
     float dt = dx.w;
 
 
-    vtx_uu[vtx_idx].x += dt*Au;   //monodomain update
+    vtx_uu[vtx_idx].x += 100.0f*dt*Au;   //monodomain update
 
 
     return;
