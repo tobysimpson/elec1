@@ -92,37 +92,37 @@ void wrt_vtk(struct prm_obj *prm, struct ocl_obj *ocl, int k)
 //        fprintf(file1, "%e \n",ocl->vtx_yy.hst[i].Vm);
 //    }
     
-    fprintf(file1,"SCALARS yy float 23\n");
-    fprintf(file1,"LOOKUP_TABLE default\n");
-    
-    
-    for(int i=0; i<prm->nv_tot; i++)
-    {
-        fprintf(file1, "%e %e %e %e %e %e %e %e %e %e %e %e %e %e %e %e %e %e %e %e %e %e %e\n",
-                ocl->vtx_yy.hst[i].Vm,
-                ocl->vtx_yy.hst[i].Ca_SR,
-                ocl->vtx_yy.hst[i].Cai,
-                ocl->vtx_yy.hst[i].g,
-                ocl->vtx_yy.hst[i].d,
-                ocl->vtx_yy.hst[i].f1,
-                ocl->vtx_yy.hst[i].f2,
-                ocl->vtx_yy.hst[i].fCa,
-                ocl->vtx_yy.hst[i].Xr1,
-                ocl->vtx_yy.hst[i].Xr2,
-                ocl->vtx_yy.hst[i].Xs,
-                ocl->vtx_yy.hst[i].h,
-                ocl->vtx_yy.hst[i].j,
-                ocl->vtx_yy.hst[i].m,
-                ocl->vtx_yy.hst[i].Xf,
-                ocl->vtx_yy.hst[i].q,
-                ocl->vtx_yy.hst[i].r,
-                ocl->vtx_yy.hst[i].Nai,
-                ocl->vtx_yy.hst[i].m_L,
-                ocl->vtx_yy.hst[i].h_L,
-                ocl->vtx_yy.hst[i].RyRa,
-                ocl->vtx_yy.hst[i].RyRo,
-                ocl->vtx_yy.hst[i].RyRc);
-    }
+//    fprintf(file1,"SCALARS yy float 23\n");
+//    fprintf(file1,"LOOKUP_TABLE default\n");
+//    
+//    
+//    for(int i=0; i<prm->nv_tot; i++)
+//    {
+//        fprintf(file1, "%e %e %e %e %e %e %e %e %e %e %e %e %e %e %e %e %e %e %e %e %e %e %e\n",
+//                ocl->vtx_yy.hst[i].Vm,
+//                ocl->vtx_yy.hst[i].Ca_SR,
+//                ocl->vtx_yy.hst[i].Cai,
+//                ocl->vtx_yy.hst[i].g,
+//                ocl->vtx_yy.hst[i].d,
+//                ocl->vtx_yy.hst[i].f1,
+//                ocl->vtx_yy.hst[i].f2,
+//                ocl->vtx_yy.hst[i].fCa,
+//                ocl->vtx_yy.hst[i].Xr1,
+//                ocl->vtx_yy.hst[i].Xr2,
+//                ocl->vtx_yy.hst[i].Xs,
+//                ocl->vtx_yy.hst[i].h,
+//                ocl->vtx_yy.hst[i].j,
+//                ocl->vtx_yy.hst[i].m,
+//                ocl->vtx_yy.hst[i].Xf,
+//                ocl->vtx_yy.hst[i].q,
+//                ocl->vtx_yy.hst[i].r,
+//                ocl->vtx_yy.hst[i].Nai,
+//                ocl->vtx_yy.hst[i].m_L,
+//                ocl->vtx_yy.hst[i].h_L,
+//                ocl->vtx_yy.hst[i].RyRa,
+//                ocl->vtx_yy.hst[i].RyRo,
+//                ocl->vtx_yy.hst[i].RyRc);
+//    }
 
     //clean up
     fclose(file1);

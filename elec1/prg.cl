@@ -180,6 +180,12 @@ kernel void vtx_init(const  float4          x0,
     vtx_uu[vtx1_idx1] = 0e0f;
     vtx_yy[vtx1_idx1] = y;
     
+    
+    if(vtx1_pos1.x==0)
+    {
+        vtx_uu[vtx1_idx1] = 1e0f;
+    }
+    
     return;
 }
 
@@ -195,7 +201,7 @@ kernel void vtx_memb(const  float4          dx,
     int  vtx1_idx1 = fn_idx1(vtx1_pos1, vtx_dim);
     
     //vec
-    vtx_uu[vtx1_idx1].x += 1e0f;
+//    vtx_uu[vtx1_idx1].x += 1e0f;
     vtx_uu[vtx1_idx1].y += dx.w;
     
     //vars
@@ -498,8 +504,6 @@ kernel void vtx_memb(const  float4          dx,
     
     //write
     vtx_yy[vtx1_idx1] = y;
-    
-   
 
     return;
 }
@@ -513,8 +517,9 @@ kernel void vtx_diff(const  float4          dx,
                      global float4          *vtx_uu,
                      global struct state    *vtx_yy)
 {
-    int3 vtx_dim = {get_global_size(0), get_global_size(1), get_global_size(2)};
-    int3 vtx_pos = {get_global_id(0)  , get_global_id(1),   get_global_id(2)};
+    //internal
+    int3 vtx_dim = (int3){get_global_size(0), get_global_size(1), get_global_size(2)} + 2;
+    int3 vtx_pos = (int3){get_global_id(0)  , get_global_id(1),   get_global_id(2)} + 1;
     int  vtx_idx = fn_idx1(vtx_pos, vtx_dim);
     
     

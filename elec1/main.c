@@ -30,6 +30,7 @@ int main(int argc, const char * argv[])
     
     //cast dims
     size_t nv[3] = {prm.vtx_dim.x, prm.vtx_dim.y, prm.vtx_dim.z};
+    size_t iv[3] = {prm.vtx_dim.x-2, prm.vtx_dim.y-2, prm.vtx_dim.z-2};
     
     /*
      ==============================
@@ -48,7 +49,7 @@ int main(int argc, const char * argv[])
         //read vec
         ocl.err = clEnqueueReadBuffer(ocl.command_queue, ocl.vtx_xx.dev, CL_TRUE, 0, prm.nv_tot*sizeof(cl_float4),    ocl.vtx_xx.hst,  0, NULL, NULL);
         ocl.err = clEnqueueReadBuffer(ocl.command_queue, ocl.vtx_uu.dev, CL_TRUE, 0, prm.nv_tot*sizeof(cl_float4),    ocl.vtx_uu.hst,  0, NULL, NULL);
-        ocl.err = clEnqueueReadBuffer(ocl.command_queue, ocl.vtx_yy.dev, CL_TRUE, 0, prm.nv_tot*sizeof(struct state), ocl.vtx_yy.hst,  0, NULL, NULL);
+//        ocl.err = clEnqueueReadBuffer(ocl.command_queue, ocl.vtx_yy.dev, CL_TRUE, 0, prm.nv_tot*sizeof(struct state), ocl.vtx_yy.hst,  0, NULL, NULL);
         
         //write vtk
         wrt_vtk(&prm, &ocl, t);
@@ -56,8 +57,12 @@ int main(int argc, const char * argv[])
         for(int k=0; k<5000; k++)
         {
             //calc
-            ocl.err = clEnqueueNDRangeKernel(ocl.command_queue, ocl.vtx_memb, 3, NULL, nv, NULL, 0, NULL, NULL);
+//            ocl.err = clEnqueueNDRangeKernel(ocl.command_queue, ocl.vtx_memb, 3, NULL, nv, NULL, 0, NULL, NULL);
+        ocl.err = clEnqueueNDRangeKernel(ocl.command_queue, ocl.vtx_diff, 3, NULL, iv, NULL, 0, NULL, NULL);
+
         }
+        
+        
     }
     
     //clean

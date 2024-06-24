@@ -82,6 +82,7 @@ struct ocl_obj
     //kernels
     cl_kernel vtx_init;
     cl_kernel vtx_memb;
+    cl_kernel vtx_diff;
 };
 
 
@@ -190,6 +191,7 @@ void ocl_init(struct prm_obj *prm, struct ocl_obj *ocl)
 
     ocl->vtx_init = clCreateKernel(ocl->program, "vtx_init", &ocl->err);
     ocl->vtx_memb = clCreateKernel(ocl->program, "vtx_memb", &ocl->err);
+    ocl->vtx_diff = clCreateKernel(ocl->program, "vtx_diff", &ocl->err);
 
     /*
      =============================
@@ -225,6 +227,11 @@ void ocl_init(struct prm_obj *prm, struct ocl_obj *ocl)
     ocl->err = clSetKernelArg(ocl->vtx_memb,  1, sizeof(cl_mem),    (void*)&ocl->vtx_xx.dev);
     ocl->err = clSetKernelArg(ocl->vtx_memb,  2, sizeof(cl_mem),    (void*)&ocl->vtx_uu.dev);
     ocl->err = clSetKernelArg(ocl->vtx_memb,  3, sizeof(cl_mem),    (void*)&ocl->vtx_yy.dev);
+    
+    ocl->err = clSetKernelArg(ocl->vtx_diff,  0, sizeof(cl_float4), (void*)&prm->dx);
+    ocl->err = clSetKernelArg(ocl->vtx_diff,  1, sizeof(cl_mem),    (void*)&ocl->vtx_xx.dev);
+    ocl->err = clSetKernelArg(ocl->vtx_diff,  2, sizeof(cl_mem),    (void*)&ocl->vtx_uu.dev);
+    ocl->err = clSetKernelArg(ocl->vtx_diff,  3, sizeof(cl_mem),    (void*)&ocl->vtx_yy.dev);
 }
 
 
@@ -237,6 +244,7 @@ void ocl_final(struct prm_obj *msh, struct ocl_obj *ocl)
     //kernels
     ocl->err = clReleaseKernel(ocl->vtx_init);
     ocl->err = clReleaseKernel(ocl->vtx_memb);
+    ocl->err = clReleaseKernel(ocl->vtx_diff);
     
     //memory
     ocl->err = clReleaseMemObject(ocl->vtx_xx.dev);
