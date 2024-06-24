@@ -455,7 +455,6 @@ kernel void vtx_memb(const  float4          dx,
     const float Ca_SR_bufSR = 1.0f / (1.0f + (Buf_SR*Kbuf_SR) / pown(y.Ca_SR + Kbuf_SR, 2));
     
 
-    
     /*printf("%e",i_Na);*/ //i_Na,i_NaL,i_b_Na,i_NaK,i_NaCa,i_fNa;
 
     // Ionic concentrations
@@ -501,6 +500,41 @@ kernel void vtx_memb(const  float4          dx,
     vtx_yy[vtx1_idx1] = y;
     
    
+
+    return;
+}
+
+
+
+
+//mono - fdm
+kernel void vtx_diff(const  float4          dx,
+                     global float4          *vtx_xx,
+                     global float4          *vtx_uu,
+                     global struct state    *vtx_yy)
+{
+    int3 vtx_dim = {get_global_size(0), get_global_size(1), get_global_size(2)};
+    int3 vtx_pos = {get_global_id(0)  , get_global_id(1),   get_global_id(2)};
+    int  vtx_idx = fn_idx1(vtx_pos, vtx_dim);
+    
+    
+    //stencil
+    float s = 0.0f;
+    s += vtx_uu[fn_idx1(vtx_pos + (int3){1,0,0}, vtx_dim)].x;
+    s += vtx_uu[fn_idx1(vtx_pos - (int3){1,0,0}, vtx_dim)].x;
+    s += vtx_uu[fn_idx1(vtx_pos + (int3){0,1,0}, vtx_dim)].x;
+    s += vtx_uu[fn_idx1(vtx_pos - (int3){0,1,0}, vtx_dim)].x;
+    s += vtx_uu[fn_idx1(vtx_pos + (int3){0,0,1}, vtx_dim)].x;
+    s += vtx_uu[fn_idx1(vtx_pos - (int3){0,0,1}, vtx_dim)].x;
+    
+    //scale
+    float Au = (s - 6.0f*vtx_uu[vtx_idx].x)/(dx.x*dx.x);
+    
+    float dt = dx.w;
+
+
+    vtx_uu[vtx_idx].x += dt*Au;   //monodomain update
+
 
     return;
 }
