@@ -47,6 +47,13 @@ constant int3 off3[27] = {{0,0,0},{1,0,0},{2,0,0},{0,1,0},{1,1,0},{2,1,0},{0,2,0
                           {0,0,1},{1,0,1},{2,0,1},{0,1,1},{1,1,1},{2,1,1},{0,2,1},{1,2,1},{2,2,1},
                           {0,0,2},{1,0,2},{2,0,2},{0,1,2},{1,1,2},{2,1,2},{0,2,2},{1,2,2},{2,2,2}};
 
+//mitchell-schaffer
+constant float MS_V_GATE    = 0.13f;        //dimensionless (13 in the paper 15 for N?)
+constant float MS_TAU_IN    = 0.3f;         //milliseconds
+constant float MS_TAU_OUT   = 6.0f;         //should be 6.0
+constant float MS_TAU_OPEN  = 120.0f;       //milliseconds
+constant float MS_TAU_CLOSE = 130.0f;       //90 endocardium or 130 epi - longer
+
 /*
  ===================================
  utilities
@@ -91,10 +98,34 @@ kernel void vtx_ini(const  struct msh_obj  msh,
     int3 vtx_pos  = {get_global_id(0), get_global_id(1), get_global_id(2)};
     int  vtx_idx  = fn_idx1(vtx_pos, msh.nv);
 
-    float4 x = (float4){msh.dx*convert_float3(vtx_pos),0e0f};
+    float4 x = (float4){msh.dx*convert_float3(vtx_pos), 0e0f};
 
     xx[vtx_idx] = x;
-    uu[vtx_idx] = (float4){0e0f,0e0f,0e0f,0e0f};
+    uu[vtx_idx] = (float4){all(vtx_pos.xyz<4),1.0f,0e0f,0e0f};
+
+    return;
+}
+
+
+//mitchell-schaffer
+kernel void vtx_ion(const  struct msh_obj  msh,
+                    global float4          *uu)
+{
+    int3 vtx_pos  = {get_global_id(0), get_global_id(1), get_global_id(2)};
+    int  vtx_idx  = fn_idx1(vtx_pos, msh.nv);
+
+    float2 u = uu[vtx_idx].xy;
+    float2 du = 0.0f;
+
+    //mitchell-schaffer
+    du.x = (u.y*u.x*u.x*(1.0f-u.x)/MS_TAU_IN) - (u.x/MS_TAU_OUT);               //ms dimensionless J_in, J_out, J_stim
+    du.y = (u.x<MS_V_GATE)?((1.0f - u.y)/MS_TAU_OPEN):(-u.y)/MS_TAU_CLOSE;      //gating variable
+
+    //update
+    u.xy += msh.dt*du;
+
+    //store
+    uu[vtx_idx].xy = u.xy;
 
     return;
 }

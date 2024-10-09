@@ -24,8 +24,6 @@ struct ocl_obj
     cl_program          program;
     char                device_str[50];
     cl_event            event;
-    
-
 };
 
 
@@ -105,7 +103,6 @@ void ocl_ini(struct ocl_obj *ocl)
 
     //clear
     free(log);
-    
 }
 
 

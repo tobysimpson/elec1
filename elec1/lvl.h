@@ -21,6 +21,7 @@ struct lvl_obj
     
     //kernels
     cl_kernel       vtx_ini;
+    cl_kernel       vtx_ion;
 };
 
 
@@ -49,11 +50,15 @@ void lvl_ini(struct lvl_obj *lvl, struct ocl_obj *ocl)
     
     //kernels
     lvl->vtx_ini = clCreateKernel(ocl->program, "vtx_ini", &ocl->err);
+    lvl->vtx_ion = clCreateKernel(ocl->program, "vtx_ion", &ocl->err);
     
     //arguments
     ocl->err = clSetKernelArg(lvl->vtx_ini,  0, sizeof(struct msh_obj),    (void*)&lvl->msh);
     ocl->err = clSetKernelArg(lvl->vtx_ini,  1, sizeof(cl_mem),            (void*)&lvl->xx);
     ocl->err = clSetKernelArg(lvl->vtx_ini,  2, sizeof(cl_mem),            (void*)&lvl->uu);
+    
+    ocl->err = clSetKernelArg(lvl->vtx_ion,  0, sizeof(struct msh_obj),    (void*)&lvl->msh);
+    ocl->err = clSetKernelArg(lvl->vtx_ion,  1, sizeof(cl_mem),            (void*)&lvl->uu);
     
     return;
 }
@@ -63,6 +68,7 @@ void lvl_fin(struct lvl_obj *lvl, struct ocl_obj *ocl)
 {
     //kernels
     ocl->err = clReleaseKernel(lvl->vtx_ini);
+    ocl->err = clReleaseKernel(lvl->vtx_ion);
     
     //memory
     ocl->err = clReleaseMemObject(lvl->xx);

@@ -34,7 +34,7 @@ int main(int argc, const char * argv[])
     
     //level
     struct lvl_obj lvl;
-    lvl.le = 2;
+    lvl.le = 5;
     lvl_ini(&lvl, &ocl);
     
     //dims
@@ -52,24 +52,22 @@ int main(int argc, const char * argv[])
     //write
     wrt_vtk(&lvl, &ocl, 0);
     
-//    //time
-//    for(int t=0; t<100; t++)
-//    {
-//        printf("%2d\n",t);
-//        
-//
-//        
-    //        //write vtk
-    //        wrt_vtk(&lvl, &ocl, t);
-//
-//        for(int k=0; k<5000; k++)
-//        {
-//            //calc
-////            ocl.err = clEnqueueNDRangeKernel(ocl.command_queue, ocl.vtx_memb, 3, NULL, nv, NULL, 0, NULL, NULL);
-////            ocl.err = clEnqueueNDRangeKernel(ocl.command_queue, ocl.vtx_diff, 3, NULL, iv, NULL, 0, NULL, NULL);
-//        }
-//
-//    }
+    //time
+    for(int t=0; t<100; t++)
+    {
+        printf("%02d\n",t);
+        
+        //write vtk
+        wrt_vtk(&lvl, &ocl, t);
+
+        for(int k=0; k<100; k++)
+        {
+            //calc
+            ocl.err = clEnqueueNDRangeKernel(ocl.command_queue, lvl.vtx_ion, 3, NULL, nv, NULL, 0, NULL, NULL);
+//            ocl.err = clEnqueueNDRangeKernel(ocl.command_queue, ocl.vtx_dif, 3, NULL, iv, NULL, 0, NULL, NULL);
+        }
+
+    }
     
     //clean
     ocl_fin(&ocl);
