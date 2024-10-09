@@ -47,12 +47,19 @@ constant int3 off3[27] = {{0,0,0},{1,0,0},{2,0,0},{0,1,0},{1,1,0},{2,1,0},{0,2,0
                           {0,0,1},{1,0,1},{2,0,1},{0,1,1},{1,1,1},{2,1,1},{0,2,1},{1,2,1},{2,2,1},
                           {0,0,2},{1,0,2},{2,0,2},{0,1,2},{1,1,2},{2,1,2},{0,2,2},{1,2,2},{2,2,2}};
 
+constant int3 off_fac[6]  = {{-1,0,0},{+1,0,0},{0,-1,0},{0,+1,0},{0,0,-1},{0,0,+1}};
+
 //mitchell-schaffer
 constant float MS_V_GATE    = 0.13f;        //dimensionless (13 in the paper 15 for N?)
 constant float MS_TAU_IN    = 0.3f;         //milliseconds
 constant float MS_TAU_OUT   = 6.0f;         //should be 6.0
 constant float MS_TAU_OPEN  = 120.0f;       //milliseconds
-constant float MS_TAU_CLOSE = 130.0f;       //90 endocardium or 130 epi - longer
+constant float MS_TAU_CLOSE = 100.0f;       //90 endocardium to 130 epi - longer
+
+//conductivity
+constant float MD_SIG_L     = 0.20f;        //conductivity (mS mm^-1) = muA mV^-1 mm^-1
+constant float MD_SIG_T     = 0.05f;
+
 
 /*
  ===================================
@@ -130,5 +137,42 @@ kernel void vtx_ion(const  struct msh_obj  msh,
     return;
 }
 
+
+//mono - fdm, iso conduct
+kernel void vtx_dif(const  struct msh_obj  msh,
+                    global float4          *uu)
+{
+    //adjust
+    int3 vtx_pos  = {get_global_id(0), get_global_id(1), get_global_id(2)};
+    int  vtx_idx  = fn_idx1(vtx_pos, msh.nv);
+
+    float s = 0.0f;     //sum off diag values
+    float d = 0.0f;     //sum diagonal coeffs
+
+
+    //loop faces
+    for(int k=0; k<6; k++)
+    {
+        int3 adj_pos = vtx_pos + off_fac[k];
+        int  adj_idx = fn_idx1(adj_pos, msh.nv);
+        int b = fn_bnd1(adj_pos, msh.nv);
+        
+        d -= b*1e0f;
+        s += b*uu[adj_idx].x;
+
+    }//adj
+    
+    
+    //apply conductivity
+    float alp = MD_SIG_T*msh.dt/pown(msh.dx,2);
+
+    //ie jacobi
+//    ele_uu[ele_idx].x = (ele_bb[ele_idx].x + alp*s)/(1.0f - alp*d);
+
+    //explicit
+    uu[vtx_idx].x += alp*(s + d*uu[vtx_idx].x);
+
+    return;
+}
 
 

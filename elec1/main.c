@@ -34,7 +34,7 @@ int main(int argc, const char * argv[])
     
     //level
     struct lvl_obj lvl;
-    lvl.le = 5;
+    lvl.le = 7;
     lvl_ini(&lvl, &ocl);
     
     //dims
@@ -64,7 +64,7 @@ int main(int argc, const char * argv[])
         {
             //calc
             ocl.err = clEnqueueNDRangeKernel(ocl.command_queue, lvl.vtx_ion, 3, NULL, nv, NULL, 0, NULL, NULL);
-//            ocl.err = clEnqueueNDRangeKernel(ocl.command_queue, ocl.vtx_dif, 3, NULL, iv, NULL, 0, NULL, NULL);
+            ocl.err = clEnqueueNDRangeKernel(ocl.command_queue, lvl.vtx_dif, 3, NULL, nv, NULL, 0, NULL, NULL);
         }
 
     }
