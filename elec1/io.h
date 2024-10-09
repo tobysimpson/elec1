@@ -1,57 +1,35 @@
 //
 //  io.h
-//  elec1
+//  mg1
 //
-//  Created by Toby Simpson on 08.02.24.
+//  Created by toby on 29.05.24.
+//  Copyright © 2024 Toby Simpson. All rights reserved.
 //
 
 #ifndef io_h
 #define io_h
 
-
 #define ROOT_WRITE  "/Users/toby/Downloads/"
 
-//write
-void wrt_raw(void *ptr, size_t n, size_t bytes, char *file_name)
-{
-//    printf("%s\n",file_name);
-    
-    //name
-    char file_path[250];
-    sprintf(file_path, "%s%s.raw", ROOT_WRITE, file_name);
-
-    //open
-    FILE* file = fopen(file_path,"wb");
-  
-    //write
-    fwrite(ptr, bytes, n, file);
-    
-    //close
-    fclose(file);
-    
-    return;
-}
-
 
 //write
-void wrt_vtk(struct prm_obj *prm, struct ocl_obj *ocl, int k)
+void wrt_vtk(struct lvl_obj *lvl, struct ocl_obj *ocl, int frm_idx)
 {
-
     FILE* file1;
     char file1_name[250];
     
     //file name
-    sprintf(file1_name, "%s%s.%03d.vtk", ROOT_WRITE, "grid1", k);
+    sprintf(file1_name, "%s%s.%02d.%03d.vtk", ROOT_WRITE, "grid", lvl->le, frm_idx);
     
     //open
-    file1 = fopen(file1_name,"w");
+    file1 = fopen(file1_name,"wb");
     
     //write
     fprintf(file1,"# vtk DataFile Version 3.0\n");
     fprintf(file1,"grid1\n");
     fprintf(file1,"ASCII\n");
     fprintf(file1,"DATASET STRUCTURED_GRID\n");
-    fprintf(file1,"DIMENSIONS %d %d %d\n", prm->vtx_dim.x, prm->vtx_dim.y, prm->vtx_dim.z);
+    fprintf(file1,"DIMENSIONS %d %d %d\n", lvl->msh.nv.x, lvl->msh.nv.y, lvl->msh.nv.z);
     
     /*
      ===================
@@ -59,75 +37,53 @@ void wrt_vtk(struct prm_obj *prm, struct ocl_obj *ocl, int k)
      ===================
      */
     
-    fprintf(file1,"\nPOINTS %d float\n", prm->nv_tot);
-
-    for(int i=0; i<prm->nv_tot; i++)
+    fprintf(file1,"\nPOINTS %d float\n", lvl->msh.nv_tot);
+    //map
+    cl_float3 *xx = clEnqueueMapBuffer(ocl->command_queue, lvl->xx, CL_TRUE, CL_MAP_READ, 0, lvl->msh.nv_tot*sizeof(cl_float3), 0, NULL, NULL, &ocl->err);
+    //write
+    for(int i=0; i<lvl->msh.nv_tot; i++)
     {
-        fprintf(file1, "%e %e %e\n", ocl->vtx_xx.hst[i].x, ocl->vtx_xx.hst[i].y, ocl->vtx_xx.hst[i].z);
+        fprintf(file1, "%e %e %e\n", xx[i].x, xx[i].y, xx[i].z);
     }
-
+    //unmap
+    clEnqueueUnmapMemObject(ocl->command_queue, lvl->xx, xx, 0, NULL, NULL);
+    
+    
     //point data flag
-    fprintf(file1,"\nPOINT_DATA %d\n", prm->nv_tot);
+    fprintf(file1,"\nPOINT_DATA %d\n", lvl->msh.nv_tot);
     
-
-    /*
-     ===================
-     scalars
-     ===================
-     */
     
-    fprintf(file1,"SCALARS uu float 4\n");
-    fprintf(file1,"LOOKUP_TABLE default\n");
-    
-    for(int i=0; i<prm->nv_tot; i++)
-    {
-        fprintf(file1, "%e %e %e %e\n", ocl->vtx_uu.hst[i].x, ocl->vtx_uu.hst[i].y, ocl->vtx_uu.hst[i].z, ocl->vtx_uu.hst[i].w);
-    }
-    
-//    fprintf(file1,"SCALARS yy float 1\n");
-//    fprintf(file1,"LOOKUP_TABLE default\n");
-//    
-//    for(int i=0; i<prm->nv_tot; i++)
+//    fprintf(file1,"VECTORS xx float\n");
+//    //map
+//    cl_float3 *vv = clEnqueueMapBuffer(ocl->command_queue, lvl->xx, CL_TRUE, CL_MAP_READ, 0, lvl->msh.nv_tot*sizeof(cl_float3), 0, NULL, NULL, &ocl->err);
+//    //write
+//    for(int i=0; i<lvl->msh.nv_tot; i++)
 //    {
-//        fprintf(file1, "%e \n",ocl->vtx_yy.hst[i].Vm);
+//        fprintf(file1, "%e %e %e\n", xx[i].x, xx[i].y, xx[i].z);
 //    }
+//    //unmap
+//    clEnqueueUnmapMemObject(ocl->command_queue, lvl->xx, vv, 0, NULL, NULL);
     
-    fprintf(file1,"SCALARS yy float 23\n");
+    
+    //uu
+    fprintf(file1,"SCALARS uu float 1\n");
     fprintf(file1,"LOOKUP_TABLE default\n");
-    
-    
-    for(int i=0; i<prm->nv_tot; i++)
+    //map
+    float *uu = clEnqueueMapBuffer(ocl->command_queue, lvl->uu, CL_TRUE, CL_MAP_READ, 0, lvl->msh.nv_tot*sizeof(float), 0, NULL, NULL, &ocl->err);
+    //write
+    for(int i=0; i<lvl->msh.nv_tot; i++)
     {
-        fprintf(file1, "%e %e %e %e %e %e %e %e %e %e %e %e %e %e %e %e %e %e %e %e %e %e %e\n",
-                ocl->vtx_yy.hst[i].Vm,
-                ocl->vtx_yy.hst[i].Ca_SR,
-                ocl->vtx_yy.hst[i].Cai,
-                ocl->vtx_yy.hst[i].g,
-                ocl->vtx_yy.hst[i].d,
-                ocl->vtx_yy.hst[i].f1,
-                ocl->vtx_yy.hst[i].f2,
-                ocl->vtx_yy.hst[i].fCa,
-                ocl->vtx_yy.hst[i].Xr1,
-                ocl->vtx_yy.hst[i].Xr2,
-                ocl->vtx_yy.hst[i].Xs,
-                ocl->vtx_yy.hst[i].h,
-                ocl->vtx_yy.hst[i].j,
-                ocl->vtx_yy.hst[i].m,
-                ocl->vtx_yy.hst[i].Xf,
-                ocl->vtx_yy.hst[i].q,
-                ocl->vtx_yy.hst[i].r,
-                ocl->vtx_yy.hst[i].Nai,
-                ocl->vtx_yy.hst[i].m_L,
-                ocl->vtx_yy.hst[i].h_L,
-                ocl->vtx_yy.hst[i].RyRa,
-                ocl->vtx_yy.hst[i].RyRo,
-                ocl->vtx_yy.hst[i].RyRc);
+        fprintf(file1, "%e\n", uu[i]);
     }
+    //unmap
+    clEnqueueUnmapMemObject(ocl->command_queue, lvl->uu, uu, 0, NULL, NULL);
+    
 
     //clean up
     fclose(file1);
-
+    
     return;
 }
+
 
 #endif /* io_h */
