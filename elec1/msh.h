@@ -24,8 +24,13 @@ struct msh_obj
 
 void msh_ini(struct msh_obj *msh)
 {
-    printf("%e %e\n",msh->dx, msh->dt);
-    
+    printf("dx %e\n", msh->dx);
+    printf("dt %e\n", msh->dt);
+    printf("ne %d %d %d\n", msh->ne.x, msh->ne.y, msh->ne.z);
+    printf("nv %d %d %d\n", msh->nv.x, msh->nv.y, msh->nv.z);
+    printf("ne_tot %d \n", msh->ne_tot);
+    printf("nv_tot %d \n", msh->nv_tot);
+
     return;
 }
 

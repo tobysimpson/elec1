@@ -37,10 +37,9 @@ int main(int argc, const char * argv[])
     lvl.le = 2;
     lvl_ini(&lvl, &ocl);
     
-    //cast dims
-//    size_t nv[3] = {prm.vtx_dim.x, prm.vtx_dim.y, prm.vtx_dim.z};
-//    size_t iv[3] = {prm.vtx_dim.x-2, prm.vtx_dim.y-2, prm.vtx_dim.z-2};
-    
+    //dims
+    size_t nv[3] = {lvl.msh.nv.x, lvl.msh.nv.y, lvl.msh.nv.z};
+
     /*
      ==============================
      init
@@ -48,7 +47,10 @@ int main(int argc, const char * argv[])
      */
     
     //init
-//    ocl.err = clEnqueueNDRangeKernel(ocl.command_queue, ocl.vtx_ini, 3, NULL, nv, NULL, 0, NULL, NULL);
+    ocl.err = clEnqueueNDRangeKernel(ocl.command_queue, lvl.vtx_ini, 3, NULL, nv, NULL, 0, NULL, NULL);
+    
+    //write
+    wrt_vtk(&lvl, &ocl, 0);
     
 //    //time
 //    for(int t=0; t<100; t++)
@@ -57,9 +59,9 @@ int main(int argc, const char * argv[])
 //        
 //
 //        
-//        //write vtk
-//        wrt_vtk(&lvl, &ocl, t);
-//        
+    //        //write vtk
+    //        wrt_vtk(&lvl, &ocl, t);
+//
 //        for(int k=0; k<5000; k++)
 //        {
 //            //calc

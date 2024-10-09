@@ -25,8 +25,7 @@ struct ocl_obj
     char                device_str[50];
     cl_event            event;
     
-    //kernels
-    cl_kernel           vtx_ini;
+
 };
 
 
@@ -107,22 +106,12 @@ void ocl_ini(struct ocl_obj *ocl)
     //clear
     free(log);
     
-    /*
-     =============================
-     kernels
-     =============================
-     */
-    
-    ocl->vtx_ini = clCreateKernel(ocl->program, "vtx_ini", &ocl->err);
 }
 
 
 //final
 void ocl_fin(struct ocl_obj *ocl)
 {
-    //kernels
-    ocl->err = clReleaseKernel(ocl->vtx_ini);
-    
     //queue
     ocl->err = clFlush(ocl->command_queue);
     ocl->err = clFinish(ocl->command_queue);
