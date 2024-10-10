@@ -34,7 +34,7 @@ int main(int argc, const char * argv[])
     
     //level
     struct lvl_obj lvl;
-    lvl.le = 7;
+    lvl.le = 5;
     lvl_ini(&lvl, &ocl);
     
     //dims
@@ -60,11 +60,20 @@ int main(int argc, const char * argv[])
         //write vtk
         wrt_vtk(&lvl, &ocl, t);
 
+        //elec iter
         for(int k=0; k<100; k++)
         {
             //calc
             ocl.err = clEnqueueNDRangeKernel(ocl.command_queue, lvl.vtx_ion, 3, NULL, nv, NULL, 0, NULL, NULL);
-            ocl.err = clEnqueueNDRangeKernel(ocl.command_queue, lvl.vtx_dif, 3, NULL, nv, NULL, 0, NULL, NULL);
+//            ocl.err = clEnqueueNDRangeKernel(ocl.command_queue, lvl.vtx_dif, 3, NULL, nv, NULL, 0, NULL, NULL);
+            
+            //jacobi iter
+            for(int l=0; l<10; l++)
+            {
+                ocl.err = clEnqueueNDRangeKernel(ocl.command_queue, lvl.vtx_dif, 3, NULL, nv, NULL, 0, NULL, NULL);
+            }
+
+            
         }
 
     }
