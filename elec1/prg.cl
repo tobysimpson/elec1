@@ -20,7 +20,6 @@ constant float MS_TAU_CLOSE = 100.0f;       //90 endocardium to 130 epi - longer
 
 //conductivity
 constant float MD_SIG_L     = 0.01f;        //conductivity (mS mm^-1) = muA mV^-1 mm^-1
-constant float MD_SIG_T     = 0.01f;
 
 //stencil
 constant int3 off_fac[6]  = {{-1,0,0},{+1,0,0},{0,-1,0},{0,+1,0},{0,0,-1},{0,0,+1}};
@@ -93,7 +92,8 @@ int fn_bnd2(int3 pos, int3 dim)
 //init
 kernel void vtx_ini(const  struct msh_obj  msh,
                     global float4          *xx,
-                    global float4          *uu)
+                    global float4          *uu,
+                    global float4          *ff)
 {
     int3 vtx_pos  = {get_global_id(0), get_global_id(1), get_global_id(2)};
     int  vtx_idx  = fn_idx1(vtx_pos, msh.nv);
@@ -134,7 +134,8 @@ kernel void vtx_ion(const  struct msh_obj  msh,
 
 //mono - fdm, iso conduct
 kernel void vtx_dif(const  struct msh_obj  msh,
-                    global float4          *uu)
+                    global float4          *uu,
+                    global float4          *ff)
 {
     //adjust
     int3 vtx_pos  = {get_global_id(0), get_global_id(1), get_global_id(2)};
