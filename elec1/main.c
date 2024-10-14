@@ -21,9 +21,8 @@
 #include "lvl.h"
 #include "io.h"
 
-//
 
-//Paci2018
+//monodomain/ms/iso
 int main(int argc, const char * argv[])
 {
     printf("hello\n");
@@ -34,7 +33,7 @@ int main(int argc, const char * argv[])
     
     //level
     struct lvl_obj lvl;
-    lvl.le = 5;
+    lvl.le = 6;
     lvl_ini(&lvl, &ocl);
     
     //dims
@@ -63,13 +62,12 @@ int main(int argc, const char * argv[])
             //calc
             ocl.err = clEnqueueNDRangeKernel(ocl.command_queue, lvl.vtx_ion, 3, NULL, nv, NULL, 0, NULL, NULL);
 
-//            //jacobi iter
-//            for(int l=0; l<10; l++)
-//            {
-//                ocl.err = clEnqueueNDRangeKernel(ocl.command_queue, lvl.vtx_dif, 3, NULL, nv, NULL, 0, NULL, NULL);
-//            }
+            //jacobi iter
+            for(int l=0; l<10; l++)
+            {
+                ocl.err = clEnqueueNDRangeKernel(ocl.command_queue, lvl.vtx_dif, 3, NULL, nv, NULL, 0, NULL, NULL);
+            }
 
-            
         }
 
     }
