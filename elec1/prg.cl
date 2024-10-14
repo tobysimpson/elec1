@@ -5,6 +5,8 @@
 //  Created by Toby Simpson on 08.02.24.
 //
 
+#include "geo.h"
+
 /*
  ===================================
  constant
@@ -102,9 +104,9 @@ kernel void vtx_ini(const  struct msh_obj  msh,
     float3 x = msh.dx*convert_float3(vtx_pos - msh.nv/2);
 
     xx[vtx_idx].xyz = x;
-//    uu[vtx_idx] = (float4){all(fabs(x.xyz)<=4.0f),1.0f,0e0f,0e0f};
-    
-    uu[vtx_idx] = (float4){all(vtx_pos.xyz<=4), 1.0f, 0e0f, 0e0f};
+//    uu[vtx_idx] = (float4){all(vtx_pos<=4),1.0f,0e0f,0e0f};  //corner
+//    uu[vtx_idx] = (float4){sdf_sph(x, (float3){0.0f,0.0f,0.0f}, 4.0f)<=0.0f, 1.0f, 0e0f, 0e0f}; //sphere
+    uu[vtx_idx] = (float4){sdf_cub(x, (float3){0.0f,0.0f,0.0f}, (float3){4.0f,8.0f,2.0f})<=0.0f, 1.0f, 0e0f, 0e0f}; //cube
     
     return;
 }
@@ -151,7 +153,7 @@ kernel void vtx_dif(const  struct msh_obj  msh,
     float  s = 0.0f;             //sum
     float  d = 0.0f;             //diag
     
-    //loop faces Au
+    //stencil
     for(int k=0; k<6; k++)
     {
         int3 adj_pos = vtx_pos + off_fac[k];
@@ -160,8 +162,7 @@ kernel void vtx_dif(const  struct msh_obj  msh,
         
         d -= adj_bnd;
         s += adj_bnd*(uu[adj_idx].x - u.x);
-
-    }//adj
+    }
     
     //params
     float alp = MD_SIG*msh.dt/msh.dx2;
@@ -169,14 +170,12 @@ kernel void vtx_dif(const  struct msh_obj  msh,
     //laplace Dˆ-1(b-Au), b=0
 //    uu[vtx_idx].x += alp*s/d;
     
-    //ie jacobi (I-alp D)ˆ-1 * (xˆt - (I - alp A)xˆk))
+    //ie jacobi (I- alpD)ˆ-1 * (uˆt - (I - alpA)uˆk)), uˆk is the iterate, uˆt is rhs
     uu[vtx_idx].x += (u.w - (u.x - alp*s))/(1.0f - alp*d);
 
-    //ie jacobi
-//    uu[vtx_idx].x = (uu[vtx_idx].x + alp*s)/(1.0f - alp*d);
-
     //explicit
-//    uu[vtx_idx].x += alp*(s + d*uu[vtx_idx].x);
+//    uu[vtx_idx].x += alp*s;
+    
 
     return;
 }
