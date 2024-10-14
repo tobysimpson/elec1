@@ -43,7 +43,6 @@ struct msh_obj
     int     nv_tot;
 };
 
-
 /*
  ===================================
  prototypes
@@ -98,11 +97,11 @@ kernel void vtx_ini(const  struct msh_obj  msh,
     int3 vtx_pos  = {get_global_id(0), get_global_id(1), get_global_id(2)};
     int  vtx_idx  = fn_idx1(vtx_pos, msh.nv);
 
-    float4 x = (float4){msh.dx*convert_float3(vtx_pos - msh.nv/2), 0e0f};
+    float3 x = msh.dx*convert_float3(vtx_pos - msh.nv/2);
 
-    xx[vtx_idx] = x;
+    xx[vtx_idx].xyz = x;
     uu[vtx_idx] = (float4){all(vtx_pos.xyz<4),1.0f,0e0f,0e0f};
-
+    
     return;
 }
 

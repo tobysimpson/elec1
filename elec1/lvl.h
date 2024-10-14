@@ -67,7 +67,7 @@ void lvl_ini(struct lvl_obj *lvl, struct ocl_obj *ocl)
     
     ocl->err = clSetKernelArg(lvl->vtx_dif,  0, sizeof(struct msh_obj),    (void*)&lvl->msh);
     ocl->err = clSetKernelArg(lvl->vtx_dif,  1, sizeof(cl_mem),            (void*)&lvl->uu);
-    ocl->err = clSetKernelArg(lvl->vtx_ini,  2, sizeof(cl_mem),            (void*)&lvl->ff);
+    ocl->err = clSetKernelArg(lvl->vtx_dif,  2, sizeof(cl_mem),            (void*)&lvl->ff);
     
     return;
 }

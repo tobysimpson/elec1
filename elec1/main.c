@@ -49,9 +49,6 @@ int main(int argc, const char * argv[])
     //init
     ocl.err = clEnqueueNDRangeKernel(ocl.command_queue, lvl.vtx_ini, 3, NULL, nv, NULL, 0, NULL, NULL);
     
-    //write
-    wrt_vtk(&lvl, &ocl, 0);
-    
     //time
     for(int t=0; t<100; t++)
     {
@@ -65,13 +62,12 @@ int main(int argc, const char * argv[])
         {
             //calc
             ocl.err = clEnqueueNDRangeKernel(ocl.command_queue, lvl.vtx_ion, 3, NULL, nv, NULL, 0, NULL, NULL);
-//            ocl.err = clEnqueueNDRangeKernel(ocl.command_queue, lvl.vtx_dif, 3, NULL, nv, NULL, 0, NULL, NULL);
-            
-            //jacobi iter
-            for(int l=0; l<10; l++)
-            {
-                ocl.err = clEnqueueNDRangeKernel(ocl.command_queue, lvl.vtx_dif, 3, NULL, nv, NULL, 0, NULL, NULL);
-            }
+
+//            //jacobi iter
+//            for(int l=0; l<10; l++)
+//            {
+//                ocl.err = clEnqueueNDRangeKernel(ocl.command_queue, lvl.vtx_dif, 3, NULL, nv, NULL, 0, NULL, NULL);
+//            }
 
             
         }
