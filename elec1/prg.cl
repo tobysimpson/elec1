@@ -21,7 +21,7 @@ constant float MS_TAU_OPEN  = 120.0f;       //milliseconds
 constant float MS_TAU_CLOSE = 100.0f;       //90 endocardium to 130 epi - longer
 
 //conductivity
-constant float MD_SIG     = 0.1f;          //conductivity (mS mm^-1) = muA mV^-1 mm^-1
+constant float MD_SIG     = 0.05f;          //conductivity (mS mm^-1) = muA mV^-1 mm^-1
 
 //stencil
 constant int3 off_fac[6]  = {{-1,0,0},{+1,0,0},{0,-1,0},{0,+1,0},{0,0,-1},{0,0,+1}};
@@ -95,8 +95,7 @@ int fn_bnd2(int3 pos, int3 dim)
 //init
 kernel void vtx_ini(const  struct msh_obj  msh,
                     global float4          *xx,
-                    global float4          *uu,
-                    global float4          *ff)
+                    global float4          *uu)
 {
     int3 vtx_pos  = {get_global_id(0), get_global_id(1), get_global_id(2)};
     int  vtx_idx  = fn_idx1(vtx_pos, msh.nv);
@@ -104,9 +103,7 @@ kernel void vtx_ini(const  struct msh_obj  msh,
     float3 x = msh.dx*convert_float3(vtx_pos - msh.nv/2);
 
     xx[vtx_idx].xyz = x;
-//    uu[vtx_idx] = (float4){all(vtx_pos<=4),1.0f,0e0f,0e0f};  //corner
-//    uu[vtx_idx] = (float4){sdf_sph(x, (float3){0.0f,0.0f,0.0f}, 4.0f)<=0.0f, 1.0f, 0e0f, 0e0f}; //sphere
-    uu[vtx_idx] = (float4){sdf_cub(x, (float3){0.0f,0.0f,0.0f}, (float3){4.0f,8.0f,2.0f})<=0.0f, 1.0f, 0e0f, 0e0f}; //cube
+    uu[vtx_idx] = (float4){fn_g0(x)<=0e0f, 1.0f, 0e0f, 0e0f}; //stim
     
     return;
 }
@@ -118,6 +115,8 @@ kernel void vtx_ion(const  struct msh_obj  msh,
 {
     int3 vtx_pos  = {get_global_id(0), get_global_id(1), get_global_id(2)};
     int  vtx_idx  = fn_idx1(vtx_pos, msh.nv);
+    
+    float3 x = msh.dx*convert_float3(vtx_pos - msh.nv/2);
 
     float4 u = uu[vtx_idx];
     float2 du = 0.0f;
@@ -127,7 +126,7 @@ kernel void vtx_ion(const  struct msh_obj  msh,
     du.y = (u.x<MS_V_GATE)?((1.0f - u.y)/MS_TAU_OPEN):(-u.y)/MS_TAU_CLOSE;      //gating variable
 
     //update
-    u.xy += msh.dt*du;
+    u.xy += (fn_g1(x)<= 0e0f)*msh.dt*du; //heart
     u.z += 1e0f;
     
     //rhs for ie
@@ -140,14 +139,15 @@ kernel void vtx_ion(const  struct msh_obj  msh,
 }
 
 
-//fdm
-kernel void vtx_dif(const  struct msh_obj  msh,
-                    global float4          *uu,
-                    global float4          *ff)
+//heart fdm
+kernel void vtx_hrt(const  struct msh_obj  msh,
+                    global float4          *uu)
 {
     //adjust
     int3 vtx_pos  = {get_global_id(0), get_global_id(1), get_global_id(2)};
     int  vtx_idx  = fn_idx1(vtx_pos, msh.nv);
+    
+    float3 x = msh.dx*convert_float3(vtx_pos - msh.nv/2);
 
     float4 u = uu[vtx_idx];     //centre
     float  s = 0.0f;             //sum
@@ -156,9 +156,10 @@ kernel void vtx_dif(const  struct msh_obj  msh,
     //stencil
     for(int k=0; k<6; k++)
     {
-        int3 adj_pos = vtx_pos + off_fac[k];
-        int  adj_idx = fn_idx1(adj_pos, msh.nv);
-        int  adj_bnd = fn_bnd1(adj_pos, msh.nv);
+        int3    adj_pos = vtx_pos + off_fac[k];
+        int     adj_idx = fn_idx1(adj_pos, msh.nv);
+        float3  adj_x   = msh.dx*convert_float3(adj_pos - msh.nv/2);
+        int     adj_bnd = fn_g1(adj_x)<=0e0f;   //zero neumann
         
         d -= adj_bnd;
         s += adj_bnd*(uu[adj_idx].x - u.x);
@@ -171,56 +172,52 @@ kernel void vtx_dif(const  struct msh_obj  msh,
 //    uu[vtx_idx].x += alp*s/d;
     
     //ie jacobi (I- alpD)ˆ-1 * (uˆt - (I - alpA)uˆk)), uˆk is the iterate, uˆt is rhs
-    uu[vtx_idx].x += (u.w - (u.x - alp*s))/(1.0f - alp*d);
+    uu[vtx_idx].x += (fn_g1(x)<=0e0f)*(u.w - (u.x - alp*s))/(1.0f - alp*d);     //heart only
 
     //explicit
 //    uu[vtx_idx].x += alp*s;
     
-
     return;
 }
 
 
-
-/*
-
-//mono - fdm, iso conduct
-kernel void vtx_dif(const  struct msh_obj  msh,
-                    global float4          *uu,
-                    global float4          *ff)
+//torso fdm
+kernel void vtx_trs(const  struct msh_obj  msh,
+                    global float4          *uu)
 {
     //adjust
     int3 vtx_pos  = {get_global_id(0), get_global_id(1), get_global_id(2)};
     int  vtx_idx  = fn_idx1(vtx_pos, msh.nv);
+    
+    float3 x = msh.dx*convert_float3(vtx_pos - msh.nv/2);
 
-    float s = 0.0f;     //sum off diag values
-    float d = 0.0f;     //sum diagonal coeffs
-
-
-    //loop faces
+    float4 u = uu[vtx_idx];     //centre
+    float  s = 0.0f;             //sum
+    float  d = 0.0f;             //diag
+    
+    //stencil
     for(int k=0; k<6; k++)
     {
-        int3 adj_pos = vtx_pos + off_fac[k];
-        int  adj_idx = fn_idx1(adj_pos, msh.nv);
-        int b = fn_bnd1(adj_pos, msh.nv);
+        int3    adj_pos = vtx_pos + off_fac[k];
+        int     adj_idx = fn_idx1(adj_pos, msh.nv);
+        int     adj_bnd = fn_bnd1(adj_pos, msh.nv);
         
-        d -= b*1e0f;
-        s += b*uu[adj_idx].x;
-
-    }//adj
+        d -= adj_bnd;
+        s += adj_bnd*(uu[adj_idx].x - u.x);
+    }
     
-    //apply conductivity
-    float alp = MD_SIG_L*msh.dt/pown(msh.dx,2);
-
-    //ie jacobi
-//    uu[vtx_idx].x = (uu[vtx_idx].x + alp*s)/(1.0f - alp*d);
+    //params
+    float alp = MD_SIG*msh.dt/msh.dx2;
+    
+    //laplace Dˆ-1(b-Au), b=0
+    uu[vtx_idx].x += (fn_g1(x)>0e0f)*-alp*s/d; //torso only, dirichlet on heart surface
+    
+    //ie jacobi (I- alpD)ˆ-1 * (uˆt - (I - alpA)uˆk)), uˆk is the iterate, uˆt is rhs
+//    uu[vtx_idx].x += (fn_g1(x)>0e0f)*(u.w - (u.x - alp*s))/(1.0f - alp*d);
 
     //explicit
-    uu[vtx_idx].x += alp*(s + d*uu[vtx_idx].x);
-
+//    uu[vtx_idx].x += alp*s;
+    
     return;
 }
- 
- */
-
 

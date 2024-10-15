@@ -18,12 +18,12 @@ struct lvl_obj
     //memory
     cl_mem          xx;
     cl_mem          uu;
-    cl_mem          ff;
     
     //kernels
     cl_kernel       vtx_ini;
     cl_kernel       vtx_ion;
-    cl_kernel       vtx_dif;
+    cl_kernel       vtx_hrt;
+    cl_kernel       vtx_trs;
 };
 
 
@@ -49,25 +49,26 @@ void lvl_ini(struct lvl_obj *lvl, struct ocl_obj *ocl)
     //memory
     lvl->xx = clCreateBuffer(ocl->context, CL_MEM_HOST_READ_ONLY, lvl->msh.nv_tot*sizeof(cl_float4), NULL, &ocl->err);
     lvl->uu = clCreateBuffer(ocl->context, CL_MEM_HOST_READ_ONLY, lvl->msh.nv_tot*sizeof(cl_float4), NULL, &ocl->err);
-    lvl->ff = clCreateBuffer(ocl->context, CL_MEM_HOST_READ_ONLY, lvl->msh.nv_tot*sizeof(cl_float4), NULL, &ocl->err);
     
     //kernels
     lvl->vtx_ini = clCreateKernel(ocl->program, "vtx_ini", &ocl->err);
     lvl->vtx_ion = clCreateKernel(ocl->program, "vtx_ion", &ocl->err);
-    lvl->vtx_dif = clCreateKernel(ocl->program, "vtx_dif", &ocl->err);
+    lvl->vtx_hrt = clCreateKernel(ocl->program, "vtx_hrt", &ocl->err);
+    lvl->vtx_trs = clCreateKernel(ocl->program, "vtx_trs", &ocl->err);
     
     //arguments
     ocl->err = clSetKernelArg(lvl->vtx_ini,  0, sizeof(struct msh_obj),    (void*)&lvl->msh);
     ocl->err = clSetKernelArg(lvl->vtx_ini,  1, sizeof(cl_mem),            (void*)&lvl->xx);
     ocl->err = clSetKernelArg(lvl->vtx_ini,  2, sizeof(cl_mem),            (void*)&lvl->uu);
-    ocl->err = clSetKernelArg(lvl->vtx_ini,  3, sizeof(cl_mem),            (void*)&lvl->ff);
     
     ocl->err = clSetKernelArg(lvl->vtx_ion,  0, sizeof(struct msh_obj),    (void*)&lvl->msh);
     ocl->err = clSetKernelArg(lvl->vtx_ion,  1, sizeof(cl_mem),            (void*)&lvl->uu);
     
-    ocl->err = clSetKernelArg(lvl->vtx_dif,  0, sizeof(struct msh_obj),    (void*)&lvl->msh);
-    ocl->err = clSetKernelArg(lvl->vtx_dif,  1, sizeof(cl_mem),            (void*)&lvl->uu);
-    ocl->err = clSetKernelArg(lvl->vtx_dif,  2, sizeof(cl_mem),            (void*)&lvl->ff);
+    ocl->err = clSetKernelArg(lvl->vtx_hrt,  0, sizeof(struct msh_obj),    (void*)&lvl->msh);
+    ocl->err = clSetKernelArg(lvl->vtx_hrt,  1, sizeof(cl_mem),            (void*)&lvl->uu);
+    
+    ocl->err = clSetKernelArg(lvl->vtx_trs,  0, sizeof(struct msh_obj),    (void*)&lvl->msh);
+    ocl->err = clSetKernelArg(lvl->vtx_trs,  1, sizeof(cl_mem),            (void*)&lvl->uu);
     
     return;
 }
@@ -78,7 +79,8 @@ void lvl_fin(struct lvl_obj *lvl, struct ocl_obj *ocl)
     //kernels
     ocl->err = clReleaseKernel(lvl->vtx_ini);
     ocl->err = clReleaseKernel(lvl->vtx_ion);
-    ocl->err = clReleaseKernel(lvl->vtx_dif);
+    ocl->err = clReleaseKernel(lvl->vtx_hrt);
+    ocl->err = clReleaseKernel(lvl->vtx_trs);
     
     //memory
     ocl->err = clReleaseMemObject(lvl->xx);

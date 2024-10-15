@@ -11,16 +11,16 @@
 //object
 struct msh_obj
 {
-    float   dx;
-    float   dt;
+    float       dx;
+    float       dt;
     
-    cl_int3 ne;
-    cl_int3 nv;
+    cl_int3     ne;
+    cl_int3     nv;
     
-    int     ne_tot;
-    int     nv_tot;
+    int         ne_tot;
+    int         nv_tot;
     
-    float   dx2;
+    float       dx2;
 };
 
 

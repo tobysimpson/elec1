@@ -27,6 +27,8 @@ int main(int argc, const char * argv[])
 {
     printf("hello\n");
     
+    printf("sizes %lu %lu %lu\n", sizeof(unsigned long), sizeof(size_t), sizeof(cl_ulong3));
+    
     //ocl
     struct ocl_obj ocl;
     ocl_ini(&ocl);
@@ -62,11 +64,19 @@ int main(int argc, const char * argv[])
             //calc
             ocl.err = clEnqueueNDRangeKernel(ocl.command_queue, lvl.vtx_ion, 3, NULL, nv, NULL, 0, NULL, NULL);
 
-            //jacobi iter
+            //heart jacobi
             for(int l=0; l<5; l++)
             {
-                ocl.err = clEnqueueNDRangeKernel(ocl.command_queue, lvl.vtx_dif, 3, NULL, nv, NULL, 0, NULL, NULL);
+                ocl.err = clEnqueueNDRangeKernel(ocl.command_queue, lvl.vtx_hrt, 3, NULL, nv, NULL, 0, NULL, NULL);
             }//l
+            
+            //torso jacobi
+            for(int l=0; l<100; l++)
+            {
+                ocl.err = clEnqueueNDRangeKernel(ocl.command_queue, lvl.vtx_trs, 3, NULL, nv, NULL, 0, NULL, NULL);
+            }//l
+            
+            
         }//k
     }//t
     
