@@ -169,13 +169,10 @@ kernel void vtx_hrt(const  struct msh_obj  msh,
     float alp = MD_SIG*msh.dt/msh.dx2;
     
     //laplace Dˆ-1(b-Au), b=0
-//    uu[vtx_idx].x += alp*s/d;
+//    uu[vtx_idx].x += -alp*s/d;
     
     //ie jacobi (I- alpD)ˆ-1 * (uˆt - (I - alpA)uˆk)), uˆk is the iterate, uˆt is rhs
     uu[vtx_idx].x += (fn_g1(x)<=0e0f)*(u.w - (u.x - alp*s))/(1.0f - alp*d);     //heart only
-
-    //explicit
-//    uu[vtx_idx].x += alp*s;
     
     return;
 }
@@ -214,9 +211,6 @@ kernel void vtx_trs(const  struct msh_obj  msh,
     
     //ie jacobi (I- alpD)ˆ-1 * (uˆt - (I - alpA)uˆk)), uˆk is the iterate, uˆt is rhs
 //    uu[vtx_idx].x += (fn_g1(x)>0e0f)*(u.w - (u.x - alp*s))/(1.0f - alp*d);
-
-    //explicit
-//    uu[vtx_idx].x += alp*s;
     
     return;
 }

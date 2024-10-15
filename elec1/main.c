@@ -71,7 +71,7 @@ int main(int argc, const char * argv[])
             }//l
             
             //torso jacobi
-            for(int l=0; l<100; l++)
+            for(int l=0; l<50; l++)
             {
                 ocl.err = clEnqueueNDRangeKernel(ocl.command_queue, lvl.vtx_trs, 3, NULL, nv, NULL, 0, NULL, NULL);
             }//l
