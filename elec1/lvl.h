@@ -35,7 +35,7 @@ void lvl_ini(struct lvl_obj *lvl, struct ocl_obj *ocl)
     int ne = pow(2,lvl->le);
     int nv = ne+1;
     
-    lvl->msh.dx     = 0.5f;
+    lvl->msh.dx     = 1.0f;
     lvl->msh.dt     = 0.1f;
     
     lvl->msh.ne     = (cl_int3){ne,ne,ne};

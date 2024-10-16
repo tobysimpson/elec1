@@ -21,7 +21,8 @@ constant float MS_TAU_OPEN  = 120.0f;       //milliseconds
 constant float MS_TAU_CLOSE = 100.0f;       //90 endocardium to 130 epi - longer
 
 //conductivity
-constant float MD_SIG       = 0.025f;          //conductivity (mS mm^-1) = muA mV^-1 mm^-1
+constant float MD_SIG_H       = 0.01f;          //conductivity (mS mm^-1) = muA mV^-1 mm^-1
+constant float MD_SIG_T       = 0.1f;
 
 //stencil
 constant int3 off_fac[6]    = {{-1,0,0},{+1,0,0},{0,-1,0},{0,+1,0},{0,0,-1},{0,0,+1}};
@@ -176,7 +177,7 @@ float fn_g1(float3 x)
     s1 = max(s1, -cyl1);
     
     //add purk
-    float cyl2 = sdf_cyl(x, (float3){0e0f, 0e0f, 0e0f}, 1e0f, 8e0f);
+    float cyl2 = sdf_cyl(x, (float3){0e0f, 0e0f, 0e0f}, 1e0f, 7e0f);
     s1 = min(s1,cyl2);
     
     return s1;
@@ -264,7 +265,7 @@ kernel void vtx_hrt(const  struct msh_obj  msh,
     }
     
     //params
-    float alp = MD_SIG*msh.dt/msh.dx2;
+    float alp = MD_SIG_H*msh.dt/msh.dx2;
     
     //laplace Dˆ-1(b-Au), b=0
 //    uu[vtx_idx].x += -alp*s/d;
@@ -298,11 +299,12 @@ kernel void vtx_trs(const  struct msh_obj  msh,
         int     adj_bnd = fn_bnd1(adj_pos, msh.nv);     //zero meumann
         
         d -= adj_bnd;
-        s += adj_bnd*(uu[adj_idx].x - u.x);
+//        s += adj_bnd*(uu[adj_idx].x - u.x); //zero neumann
+        s += (adj_bnd*uu[adj_idx].x - u.x); //zero dirichlet
     }
     
     //params
-    float alp = MD_SIG*msh.dt/msh.dx2;
+    float alp = MD_SIG_T*msh.dt/msh.dx2;
     
     //laplace Dˆ-1(b-Au), b=0
     uu[vtx_idx].x += (fn_e1(x)>0e0f)*-alp*s/d; //torso only, dirichlet on heart surface

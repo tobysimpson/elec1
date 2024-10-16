@@ -65,13 +65,13 @@ int main(int argc, const char * argv[])
             ocl.err = clEnqueueNDRangeKernel(ocl.command_queue, lvl.vtx_ion, 3, NULL, nv, NULL, 0, NULL, NULL);
 
             //heart jacobi
-            for(int l=0; l<5; l++)
+            for(int l=0; l<10; l++)
             {
                 ocl.err = clEnqueueNDRangeKernel(ocl.command_queue, lvl.vtx_hrt, 3, NULL, nv, NULL, 0, NULL, NULL);
             }//l
             
             //torso jacobi
-            for(int l=0; l<50; l++)
+            for(int l=0; l<100; l++)
             {
                 ocl.err = clEnqueueNDRangeKernel(ocl.command_queue, lvl.vtx_trs, 3, NULL, nv, NULL, 0, NULL, NULL);
             }//l
