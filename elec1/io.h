@@ -64,6 +64,19 @@ void wrt_vtk(struct lvl_obj *lvl, struct ocl_obj *ocl, int frm_idx)
 //    //unmap
 //    clEnqueueUnmapMemObject(ocl->command_queue, lvl->xx, vv, 0, NULL, NULL);
     
+    //xx
+    fprintf(file1,"SCALARS xx float 4\n");
+    fprintf(file1,"LOOKUP_TABLE default\n");
+    //map
+    xx = clEnqueueMapBuffer(ocl->command_queue, lvl->xx, CL_TRUE, CL_MAP_READ, 0, lvl->msh.nv_tot*sizeof(cl_float4), 0, NULL, NULL, &ocl->err);
+    //write
+    for(int i=0; i<lvl->msh.nv_tot; i++)
+    {
+        fprintf(file1, "%e %e %e %e\n", xx[i].x, xx[i].y, xx[i].z, xx[i].w);
+    }
+    //unmap
+    clEnqueueUnmapMemObject(ocl->command_queue, lvl->xx, xx, 0, NULL, NULL);
+    
     
     //uu
     fprintf(file1,"SCALARS uu float 4\n");
@@ -78,12 +91,15 @@ void wrt_vtk(struct lvl_obj *lvl, struct ocl_obj *ocl, int frm_idx)
     //unmap
     clEnqueueUnmapMemObject(ocl->command_queue, lvl->uu, uu, 0, NULL, NULL);
     
+    
 
+    
     //clean up
     fclose(file1);
     
     return;
 }
+
 
 
 #endif /* io_h */

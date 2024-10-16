@@ -8,7 +8,6 @@
 
 /* Begin PBXBuildFile section */
 		DA0CA8BB2CB6BEF80077854C /* prg.cl in CopyFiles */ = {isa = PBXBuildFile; fileRef = DABEE07F2BF49A09005D1C4D /* prg.cl */; };
-		DA60226D2CBD655400650CC4 /* geo.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = DA60226B2CBD64C900650CC4 /* geo.h */; };
 		DA604C522B7130D300D6CE88 /* main.c in Sources */ = {isa = PBXBuildFile; fileRef = DA604C512B7130D300D6CE88 /* main.c */; };
 		DABEE0802BF49A09005D1C4D /* prg.cl in Sources */ = {isa = PBXBuildFile; fileRef = DABEE07F2BF49A09005D1C4D /* prg.cl */; };
 /* End PBXBuildFile section */
@@ -20,7 +19,6 @@
 			dstPath = "";
 			dstSubfolderSpec = 16;
 			files = (
-				DA60226D2CBD655400650CC4 /* geo.h in CopyFiles */,
 				DA0CA8BB2CB6BEF80077854C /* prg.cl in CopyFiles */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -32,7 +30,6 @@
 		DA3E74B12CB6B33C00783776 /* lvl.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = lvl.h; sourceTree = "<group>"; };
 		DA5337332B74EB4E00AF8B2A /* io.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = io.h; sourceTree = "<group>"; };
 		DA5337342B74EB5B00AF8B2A /* ocl.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ocl.h; sourceTree = "<group>"; };
-		DA60226B2CBD64C900650CC4 /* geo.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = geo.h; sourceTree = "<group>"; };
 		DA604C4E2B7130D300D6CE88 /* elec1 */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = elec1; sourceTree = BUILT_PRODUCTS_DIR; };
 		DA604C512B7130D300D6CE88 /* main.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = main.c; sourceTree = "<group>"; };
 		DABEE07F2BF49A09005D1C4D /* prg.cl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.opencl; path = prg.cl; sourceTree = "<group>"; };
@@ -73,7 +70,6 @@
 				DA3E74B12CB6B33C00783776 /* lvl.h */,
 				DA5337332B74EB4E00AF8B2A /* io.h */,
 				DA604C512B7130D300D6CE88 /* main.c */,
-				DA60226B2CBD64C900650CC4 /* geo.h */,
 				DABEE07F2BF49A09005D1C4D /* prg.cl */,
 			);
 			path = elec1;

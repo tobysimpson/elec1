@@ -76,8 +76,8 @@ int main(int argc, const char * argv[])
                 ocl.err = clEnqueueNDRangeKernel(ocl.command_queue, lvl.vtx_trs, 3, NULL, nv, NULL, 0, NULL, NULL);
             }//l
             
-            
         }//k
+        
     }//t
     
     //clean

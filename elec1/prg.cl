@@ -5,7 +5,7 @@
 //  Created by Toby Simpson on 08.02.24.
 //
 
-#include "geo.h"
+//#include "geo.h"
 
 /*
  ===================================
@@ -21,10 +21,10 @@ constant float MS_TAU_OPEN  = 120.0f;       //milliseconds
 constant float MS_TAU_CLOSE = 100.0f;       //90 endocardium to 130 epi - longer
 
 //conductivity
-constant float MD_SIG     = 0.05f;          //conductivity (mS mm^-1) = muA mV^-1 mm^-1
+constant float MD_SIG       = 0.025f;          //conductivity (mS mm^-1) = muA mV^-1 mm^-1
 
 //stencil
-constant int3 off_fac[6]  = {{-1,0,0},{+1,0,0},{0,-1,0},{0,+1,0},{0,0,-1},{0,0,+1}};
+constant int3 off_fac[6]    = {{-1,0,0},{+1,0,0},{0,-1,0},{0,+1,0},{0,0,-1},{0,0,+1}};
 
 /*
  ===================================
@@ -86,6 +86,104 @@ int fn_bnd2(int3 pos, int3 dim)
     return (pos.x==0)||(pos.y==0)||(pos.z==0)||(pos.x==dim.x-1)||(pos.y==dim.y-1)||(pos.z==dim.z-1);
 }
 
+
+/*
+ ==============================
+ sdf
+ ==============================
+ */
+
+
+//cuboid
+float sdf_cub(float3 x, float3 c, float3 r)
+{
+    float3 d = fabs(x - c) - r;
+    
+    return max(d.x,max(d.y,d.z));
+}
+
+
+//sphere
+float sdf_sph(float3 x, float3 c, float r)
+{
+    return length(x - c) - r;
+}
+
+
+//capsule (from,to,r)
+float sdf_cap(float3 p, float3 a, float3 b, float r)
+{
+    float3 pa = p - a;
+    float3 ba = b - a;
+    
+    float h = clamp(dot(pa,ba)/dot(ba,ba), 0.0f, 1.0f);
+    
+    return length(pa - ba*h) - r;
+}
+
+//cylinder (x,c,r,h)
+float sdf_cyl(float3 x, float3 c, float r, float h)
+{
+    return max(length(x.xy - c.xy) - r, fabs(x.z - c.z) - h);
+}
+
+
+/*
+ ===================================
+ geometry
+ ===================================
+ */
+
+
+//stimulus
+float fn_g0(float3 x)
+{
+    float3 c = (float3){0e0f, 0e0f, 7e0f};
+    float  r = 1.0f;
+    
+    return sdf_sph(x, c, r);
+}
+
+
+////heart
+//float fn_g1(float3 x)
+//{
+//    float3 c = (float3){0e0f, 0e0f, 0e0f};
+//    float3 r = (float3){8e0f, 8e0f, 8e0f};
+//
+//    return sdf_cub(x, c, r);
+//}
+
+//epicardium
+float fn_e1(float3 x)
+{
+    return sdf_cap(x, (float3){0e0f, 0e0f, -2e0f}, (float3){0e0f, 0e0f, +2e0f}, 6.0f);
+}
+
+
+//heart
+float fn_g1(float3 x)
+{
+    //epicardium
+    float s1 = fn_e1(x);
+    
+    //subtract endocardium for void
+    float cap1 = sdf_cap(x, (float3){0e0f, 0e0f, -2e0f}, (float3){0e0f, 0e0f, +2e0f}, 4.0f);    //endo
+    s1 = max(s1, -cap1);
+    
+    //insulate a/v
+    float cyl1 = sdf_cyl(x, (float3){0e0f, 0e0f, 1e0f}, 7e0f, 1e0f); //horiz
+    s1 = max(s1, -cyl1);
+    
+    //add purk
+    float cyl2 = sdf_cyl(x, (float3){0e0f, 0e0f, 0e0f}, 1e0f, 8e0f);
+    s1 = min(s1,cyl2);
+    
+    return s1;
+}
+
+
+
 /*
  ===================================
  kernels
@@ -102,7 +200,7 @@ kernel void vtx_ini(const  struct msh_obj  msh,
 
     float3 x = msh.dx*convert_float3(vtx_pos - msh.nv/2);
 
-    xx[vtx_idx].xyz = x;
+    xx[vtx_idx] = (float4){x, fn_g1(x)};
     uu[vtx_idx] = (float4){fn_g0(x)<=0e0f, 1.0f, 0e0f, 0e0f}; //stim
     
     return;
@@ -197,7 +295,7 @@ kernel void vtx_trs(const  struct msh_obj  msh,
     {
         int3    adj_pos = vtx_pos + off_fac[k];
         int     adj_idx = fn_idx1(adj_pos, msh.nv);
-        int     adj_bnd = fn_bnd1(adj_pos, msh.nv);
+        int     adj_bnd = fn_bnd1(adj_pos, msh.nv);     //zero meumann
         
         d -= adj_bnd;
         s += adj_bnd*(uu[adj_idx].x - u.x);
@@ -207,7 +305,7 @@ kernel void vtx_trs(const  struct msh_obj  msh,
     float alp = MD_SIG*msh.dt/msh.dx2;
     
     //laplace Dˆ-1(b-Au), b=0
-    uu[vtx_idx].x += (fn_g1(x)>0e0f)*-alp*s/d; //torso only, dirichlet on heart surface
+    uu[vtx_idx].x += (fn_e1(x)>0e0f)*-alp*s/d; //torso only, dirichlet on heart surface
     
     //ie jacobi (I- alpD)ˆ-1 * (uˆt - (I - alpA)uˆk)), uˆk is the iterate, uˆt is rhs
 //    uu[vtx_idx].x += (fn_g1(x)>0e0f)*(u.w - (u.x - alp*s))/(1.0f - alp*d);
