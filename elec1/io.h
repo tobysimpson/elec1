@@ -9,7 +9,7 @@
 #ifndef io_h
 #define io_h
 
-#define ROOT_WRITE  "/Users/toby/Downloads/"
+#define ROOT_WRITE  "/Users/toby/Downloads/vtk"
 
 
 //write
@@ -19,7 +19,7 @@ void wrt_vtk(struct lvl_obj *lvl, struct ocl_obj *ocl, int frm_idx)
     char file1_name[250];
     
     //file name
-    sprintf(file1_name, "%s%s.%02d.%03d.vtk", ROOT_WRITE, "grid", lvl->le, frm_idx);
+    sprintf(file1_name, "%s/%s.%02d.%03d.vtk", ROOT_WRITE, "grid", lvl->le, frm_idx);
     
     //open
     file1 = fopen(file1_name,"wb");

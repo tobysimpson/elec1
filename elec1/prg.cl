@@ -21,8 +21,8 @@ constant float MS_TAU_OPEN  = 120.0f;       //milliseconds
 constant float MS_TAU_CLOSE = 100.0f;       //90 endocardium to 130 epi - longer
 
 //conductivity
-constant float MD_SIG_H       = 0.01f;          //conductivity (mS mm^-1) = muA mV^-1 mm^-1
-constant float MD_SIG_T       = 0.1f;
+constant float MD_SIG_H     = 0.01f;          //conductivity (mS mm^-1) = muA mV^-1 mm^-1
+constant float MD_SIG_T     = 0.5f;
 
 //stencil
 constant int3 off_fac[6]    = {{-1,0,0},{+1,0,0},{0,-1,0},{0,+1,0},{0,0,-1},{0,0,+1}};
@@ -122,7 +122,8 @@ float sdf_cap(float3 p, float3 a, float3 b, float r)
     return length(pa - ba*h) - r;
 }
 
-//cylinder (x,c,r,h)
+
+//cylinder z-axis (x,c,r,h)
 float sdf_cyl(float3 x, float3 c, float r, float h)
 {
     return max(length(x.xy - c.xy) - r, fabs(x.z - c.z) - h);
@@ -139,7 +140,7 @@ float sdf_cyl(float3 x, float3 c, float r, float h)
 //stimulus
 float fn_g0(float3 x)
 {
-    float3 c = (float3){0e0f, 0e0f, 7e0f};
+    float3 c = (float3){-4e0f, 0e0f, +5e0f};
     float  r = 1.0f;
     
     return sdf_sph(x, c, r);
@@ -299,8 +300,8 @@ kernel void vtx_trs(const  struct msh_obj  msh,
         int     adj_bnd = fn_bnd1(adj_pos, msh.nv);     //zero meumann
         
         d -= adj_bnd;
-//        s += adj_bnd*(uu[adj_idx].x - u.x); //zero neumann
-        s += (adj_bnd*uu[adj_idx].x - u.x); //zero dirichlet
+        s += adj_bnd*(uu[adj_idx].x - u.x); //zero neumann
+//        s += (adj_bnd*uu[adj_idx].x - u.x); //zero dirichlet
     }
     
     //params

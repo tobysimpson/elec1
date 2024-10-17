@@ -22,6 +22,7 @@
 #include "io.h"
 
 
+
 //monodomain/ms/iso
 int main(int argc, const char * argv[])
 {
@@ -35,7 +36,7 @@ int main(int argc, const char * argv[])
     
     //level
     struct lvl_obj lvl;
-    lvl.le = 5;
+    lvl.le = 6;
     lvl_ini(&lvl, &ocl);
     
     //dims
